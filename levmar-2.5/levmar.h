@@ -1,6 +1,6 @@
-/* 
+/*
 ////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 //  Prototypes and definitions for the Levenberg - Marquardt minimization algorithm
 //  Copyright (C) 2004  Manolis Lourakis (lourakis at ics forth gr)
 //  Institute of Computer Science, Foundation for Research & Technology - Hellas
@@ -34,7 +34,7 @@
  * non-reentrant and is not safe in a shared memory multiprocessing environment.
  * Bellow, this option is turned on only when not compiling with OpenMP.
  */
-#if !defined(_OPENMP) 
+#if !defined(_OPENMP)
 #define LINSOLVERS_RETAIN_MEMORY /* comment this if you don't want routines in Axb.c retain working memory between calls */
 #endif
 
@@ -109,7 +109,7 @@ extern int dlevmar_dif(
 /* box-constrained minimization */
 extern int dlevmar_bc_der(
        void (*func)(double *p, double *hx, int m, int n, void *adata),
-       void (*jacf)(double *p, double *j, int m, int n, void *adata),  
+       void (*jacf)(double *p, double *j, int m, int n, void *adata),
        double *p, double *x, int m, int n, double *lb, double *ub,
        int itmax, double *opts, double *info, double *work, double *covar, void *adata);
 
@@ -153,7 +153,7 @@ extern int dlevmar_bleic_der(
 
 extern int dlevmar_bleic_dif(
       void (*func)(double *p, double *hx, int m, int n, void *adata),
-      double *p, double *x, int m, int n, double *lb, double *ub, 
+      double *p, double *x, int m, int n, double *lb, double *ub,
       double *A, double *b, int k1, double *C, double *d, int k2,
       int itmax, double *opts, double *info, double *work, double *covar, void *adata);
 
@@ -194,6 +194,20 @@ extern int dlevmar_lic_dif(
       int itmax, double opts[5], double info[LM_INFO_SZ], double *work, double *covar, void *adata);
 #endif /* HAVE_LAPACK */
 
+/*
+    Original by: jstar@iem.pw.edu.pl, modified: odnousm@iem.pw.edu.pl
+    A possibility of breaking levmar_bc by an external function.
+
+    user_break_check is defined in lm.c and set to NULL there.
+    levmar_bc checks (after each iteration) if this function pointer is not
+    NULL and in such case pointed function is called.
+    If it returns 1, then the iteration loop is stopped and levmar_bc
+    returns info[6] == 8 (reason for termination.)
+*/
+typedef int (*d_user_break_check_t)(int currentIt, int maxIt, double* p,
+    int m, int n, double* e, double eL2);
+extern d_user_break_check_t d_user_break_fun;
+
 #endif /* LM_DBL_PREC */
 
 
@@ -214,7 +228,7 @@ extern int slevmar_dif(
 /* box-constrained minimization */
 extern int slevmar_bc_der(
        void (*func)(float *p, float *hx, int m, int n, void *adata),
-       void (*jacf)(float *p, float *j, int m, int n, void *adata),  
+       void (*jacf)(float *p, float *j, int m, int n, void *adata),
        float *p, float *x, int m, int n, float *lb, float *ub,
        int itmax, float *opts, float *info, float *work, float *covar, void *adata);
 

@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////////
-// 
+//
 //  Levenberg - Marquardt non-linear minimization algorithm
 //  Copyright (C) 2004  Manolis Lourakis (lourakis at ics forth gr)
 //  Institute of Computer Science, Foundation for Research & Technology - Hellas
@@ -17,7 +17,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////////
 
-/******************************************************************************** 
+/********************************************************************************
  * Levenberg-Marquardt nonlinear minimization. The same core code is used with
  * appropriate #defines to derive single and double precision versions, see
  * also lm_core.c
@@ -73,6 +73,12 @@
 #define LM_CNST(x) (x)
 
 #include "lm_core.c" // read in core code
+
+/*
+    Original: jstar@iem.pw.edu.pl, modified: odnousm@iem.pw.edu.pl
+    Entry point for user supplied break function.
+ */
+d_user_break_check_t d_user_break_fun = NULL;
 
 #undef LM_REAL
 #undef LM_PREFIX
