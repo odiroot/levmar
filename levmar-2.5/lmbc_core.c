@@ -38,6 +38,9 @@
 #define LMBC_DIF_FUNC LM_ADD_PREFIX(lmbc_dif_func)
 #define LMBC_DIF_JACF LM_ADD_PREFIX(lmbc_dif_jacf)
 
+/* jstar@iem.pw.edu.pl */
+#define USER_BREAK_CHECK d_user_break_fun
+
 #ifdef HAVE_LAPACK
 #define AX_EQ_B_LU LM_ADD_PREFIX(Ax_eq_b_LU)
 #define AX_EQ_B_CHOL LM_ADD_PREFIX(Ax_eq_b_Chol)
@@ -779,6 +782,17 @@ gradproj: /* Note that this point can also be reached via a goto when LNSRCH() f
       p_eL2=pDp_eL2;
       break;
     } /* inner loop */
+
+    /*
+      Original: jstar@iem.pw.edu.pl, modified: odnousm@iem.pw.edu.pl
+      Check whether user wants to stop optimization.
+    */
+    if(USER_BREAK_CHECK != NULL) {
+      if(USER_BREAK_CHECK(k, itmax, p, m, e, n, p_eL2) == 1) {
+        stop = 8;
+        break;
+      }
+    }
   }
 
 breaknested: /* NOTE: this point is also reached via an explicit goto! */
