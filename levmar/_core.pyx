@@ -7,6 +7,8 @@ TODO:
     * Implement a weighted least square method.
 """
 from __future__ import division
+import sys
+from exceptions import KeyboardInterrupt
 cimport cython
 from numpy cimport *
 import warnings
@@ -109,8 +111,16 @@ cdef class _LMFunction:
             object py_p = PyArray_SimpleNewFromData(1, &m_, NPY_DOUBLE, <void*>p)
             ndarray py_y
 
+
         args = PySequence_Concat((py_p,), self.args)
-        py_y = PyObject_CallObject(self.func, args)
+        # This is needed so the execution won't prevent user exit.
+        try:
+            py_y = PyObject_CallObject(self.func, args)
+        except KeyboardInterrupt, e:
+            # It's actually strange that this works.
+            # sys.exit() here would throw SystemExit that would be ignored.
+            pass
+
         ## Copy the result to `x`
         memcpy(y, py_y.data, n*sizeof(double))
 
