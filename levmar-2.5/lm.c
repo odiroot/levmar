@@ -79,6 +79,10 @@
     Entry point for user supplied break function.
  */
 d_user_break_check_t d_user_break_fun = NULL;
+// Use this to change user break function pointer.
+void register_break_fun(d_user_break_check_t fun) {
+    d_user_break_fun = fun;
+}
 
 #undef LM_REAL
 #undef LM_PREFIX

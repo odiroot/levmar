@@ -147,3 +147,8 @@ cdef extern from "levmar.h":
     double dlevmar_R2(
         void (*func)(double *p, double *hx, int m, int n, void *adata),
         double *p, double *x, int m, int n, void *adata)
+
+    # Entry point for setting user break callback (odnousm@iem.pw.edu.pl)
+    void register_break_fun(
+        int (*func)(int currentIt, int maxIt, double* p, int m, double* e,
+            int n, double eL2))

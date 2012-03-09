@@ -49,6 +49,7 @@ _LM_STOP_REASONS = {
     4: "Singular matrix.  Restart from current `p` with increased mu",
     5: "No further error reduction is possible. Restart with increased mu",
     6: "Stopped by small ||e||_2",
+    8: "Stopped by user break function"
 }
 
 _LM_STOP_REASONS_WARNED = (3, 4, 5)
@@ -72,6 +73,14 @@ class LMUserFuncError(LMError):
 
 class LMWarning(UserWarning):
     pass
+
+
+cdef int user_break_check(int currentIt, int maxIt, double *p, int m,
+        double *err, int n, double eL2):
+    print "Iteration: %d of %d" % (currentIt, maxIt)
+    print "Error %g" % eL2
+    return 1
+register_break_fun(user_break_check)
 
 
 cdef class _LMFunction:
