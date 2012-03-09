@@ -151,4 +151,4 @@ cdef extern from "levmar.h":
     # Entry point for setting user break callback (odnousm@iem.pw.edu.pl)
     void register_break_fun(
         int (*func)(int currentIt, int maxIt, double* p, int m, double* e,
-            int n, double eL2, void* adata))
+            int n, double eL2))

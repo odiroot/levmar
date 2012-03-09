@@ -100,21 +100,17 @@ cdef class _LMFunction:
         object func
         object jacf
         object args
-        object breakf
 
-    def __init__(self, func, args, jacf=None, breakf=None):
+    def __init__(self, func, args, jacf=None):
         self.func = func
         self.args = args
         self.jacf = jacf
-        self.breakf = breakf
-        register_break_fun(callback_breakf)
 
     cdef void eval_func(self, double *p, double *y, int m, int n):
         cdef:
             npy_intp m_ = m
             object py_p = PyArray_SimpleNewFromData(1, &m_, NPY_DOUBLE, <void*>p)
             ndarray py_y
-
 
         args = PySequence_Concat((py_p,), self.args)
         # This is needed so the execution won't prevent user exit.
@@ -191,11 +187,6 @@ cdef inline void callback_func(double *p, double *y, int m, int n, void *ctx):
 
 cdef inline void callback_jacf(double *p, double *jacf, int m, int n, void *ctx):
     (<_LMFunction>ctx).eval_jacf(p, jacf, m, n)
-
-
-cdef inline int callback_breakf(int currentIt, int maxIt, double *p, int m,
-        double *err, int n, double eL2, void* ctx):
-    print "TODO: Attach void* _LMFunction object to call self.breakf"
 
 
 cdef class _LMWorkSpace:
@@ -389,6 +380,20 @@ cdef inline int set_iter_params(double mu, double eps1, double eps2, double eps3
         raise ValueError("`maxit` must be a positive.")
 
 
+# Workaround to allow calling Python defined user break function.
+breakf_holder = [None]
+
+cdef inline int user_break_check(int currentIt, int maxIt, double *p, int m,
+        double *err, int n, double eL2):
+    if breakf_holder[0] is not None:
+        res = breakf_holder[0](i=currentIt, maxit=maxIt, error=eL2)
+        if res is not None:
+            return res
+    return 0
+# We cannot assign to non-lvalue in Cython, assignment done in C layer.
+register_break_fun(user_break_check)
+
+
 @cython.wraparound(False)
 @cython.boundscheck(False)
 def levmar(func, p0, y, args=(), jacf=None, breakf=None,
@@ -488,8 +493,12 @@ def levmar(func, p0, y, args=(), jacf=None, breakf=None,
         npy_intp* dims = [m, m]
         ndarray covr = PyArray_ZEROS(2, dims, NPY_DOUBLE, 0)
 
+
+    # Set the user break function so it can be called back (from levmar).
+    breakf_holder[0] = breakf
+
     ## Set the functions and their extra arguments, and verify them.
-    lm_func = _LMFunction(func, args, jacf, breakf=breakf)
+    lm_func = _LMFunction(func, args, jacf)
     verify_funcs(lm_func, p, m, n)
     ## Set the iteration parameters: `opts` and `maxit`
     set_iter_params(mu, eps1, eps2, eps3, maxit, cdif, opts)

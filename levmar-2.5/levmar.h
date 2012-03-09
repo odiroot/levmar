@@ -205,7 +205,7 @@ extern int dlevmar_lic_dif(
     returns info[6] == 8 (reason for termination.)
 */
 typedef int (*d_user_break_check_t)(int currentIt, int maxIt, double* p,
-    int m, double* e, int n, double eL2, void* adata);
+    int m, double* e, int n, double eL2);
 extern d_user_break_check_t d_user_break_fun;
 void register_break_fun(d_user_break_check_t fun);
 
