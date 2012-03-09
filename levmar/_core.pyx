@@ -75,14 +75,6 @@ class LMWarning(UserWarning):
     pass
 
 
-cdef int user_break_check(int currentIt, int maxIt, double *p, int m,
-        double *err, int n, double eL2):
-    print "Iteration: %d of %d" % (currentIt, maxIt)
-    print "Error %g" % eL2
-    return 1
-register_break_fun(user_break_check)
-
-
 cdef class _LMFunction:
     """
     Parameters
@@ -108,11 +100,14 @@ cdef class _LMFunction:
         object func
         object jacf
         object args
+        object breakf
 
-    def __init__(self, func, args, jacf=None):
+    def __init__(self, func, args, jacf=None, breakf=None):
         self.func = func
         self.args = args
         self.jacf = jacf
+        self.breakf = breakf
+        register_break_fun(callback_breakf)
 
     cdef void eval_func(self, double *p, double *y, int m, int n):
         cdef:
@@ -196,6 +191,11 @@ cdef inline void callback_func(double *p, double *y, int m, int n, void *ctx):
 
 cdef inline void callback_jacf(double *p, double *jacf, int m, int n, void *ctx):
     (<_LMFunction>ctx).eval_jacf(p, jacf, m, n)
+
+
+cdef inline int callback_breakf(int currentIt, int maxIt, double *p, int m,
+        double *err, int n, double eL2, void* ctx):
+    print "TODO: Attach void* _LMFunction object to call self.breakf"
 
 
 cdef class _LMWorkSpace:
@@ -391,7 +391,7 @@ cdef inline int set_iter_params(double mu, double eps1, double eps2, double eps3
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def levmar(func, p0, y, args=(), jacf=None,
+def levmar(func, p0, y, args=(), jacf=None, breakf=None,
            bounds=None, A=None, b=None, C=None, d=None,
            double mu=1e-3, double eps1=_LM_EPS1, double eps2=_LM_EPS2,
            double eps3=_LM_EPS3, int maxit=1000, bint cdif=False):
@@ -489,7 +489,7 @@ def levmar(func, p0, y, args=(), jacf=None,
         ndarray covr = PyArray_ZEROS(2, dims, NPY_DOUBLE, 0)
 
     ## Set the functions and their extra arguments, and verify them.
-    lm_func = _LMFunction(func, args, jacf)
+    lm_func = _LMFunction(func, args, jacf, breakf=breakf)
     verify_funcs(lm_func, p, m, n)
     ## Set the iteration parameters: `opts` and `maxit`
     set_iter_params(mu, eps1, eps2, eps3, maxit, cdif, opts)

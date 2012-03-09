@@ -125,7 +125,7 @@ def _full_output(func, p, y, args, covr, info):
     return Output(p, p_stdv, covr, corr, r2, niter, ndf, info)
 
 
-def levmar(func, p0, y, args=(), jacf=None,
+def levmar(func, p0, y, args=(), jacf=None, breakf=None,
            bounds=None, A=None, b=None, C=None, d=None,
            mu=1e-3, eps1=_core._LM_EPS1, eps2=_core._LM_EPS2, eps3=_core._LM_EPS3,
            maxit=1000, cdif=False, full_output=False):
@@ -210,7 +210,7 @@ def levmar(func, p0, y, args=(), jacf=None,
     --------
     utils.Output
     """
-    p, covr, info =  _core.levmar(func, p0,  y, args, jacf, bounds,
+    p, covr, info =  _core.levmar(func, p0,  y, args, jacf, breakf, bounds,
                                   A, b, C, d, mu, eps1, eps2, eps3, maxit, cdif)
     if full_output is False:
         return p, covr, info
