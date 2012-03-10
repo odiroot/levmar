@@ -382,7 +382,7 @@ cdef inline int set_iter_params(double mu, double eps1, double eps2, double eps3
 
 
 # Workaround to allow calling Python defined user break function.
-breakf_holder = [None]
+breakf_holder = None
 
 cdef inline int user_break_check(int currentIt, int maxIt, double *p, int m,
         double *err, int n, double eL2):
@@ -392,11 +392,11 @@ cdef inline int user_break_check(int currentIt, int maxIt, double *p, int m,
         object py_p = PyArray_SimpleNewFromData(1, &m_, NPY_DOUBLE, <void*>p)
 
     # No callback function defined.
-    if breakf_holder[0] is None:
+    if breakf_holder is None:
         return 0
 
     # Call the callback function.
-    result = breakf_holder[0](i=currentIt, maxit=maxIt, p=py_p, error=eL2)
+    result = breakf_holder(i=currentIt, maxit=maxIt, p=py_p, error=eL2)
 
     # We have to return an int, guard this
     if result is None:
@@ -508,7 +508,8 @@ def levmar(func, p0, y, args=(), jacf=None, breakf=None,
 
 
     # Set the user break function so it can be called back (from levmar).
-    breakf_holder[0] = breakf
+    global breakf_holder
+    breakf_holder = breakf
 
     ## Set the functions and their extra arguments, and verify them.
     lm_func = _LMFunction(func, args, jacf)
